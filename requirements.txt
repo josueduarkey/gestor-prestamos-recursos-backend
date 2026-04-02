@@ -1,2 +1,12 @@
 fastapi[standard]
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-dotenv
 msal
+python-jose
+passlib[bcrypt]
+fastapi-mail
+pydantic
+httpx
+alembic
