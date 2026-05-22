@@ -32,6 +32,22 @@ services:
       postgres:
         condition: service_healthy
 
+  api:
+    build: .
+    container_name: gestor_prestamos_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Inside Docker, reach postgres by service name — overrides localhost from .env
+      DATABASE_URL: postgresql://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-prestamos_db}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   pgadmin_data:
