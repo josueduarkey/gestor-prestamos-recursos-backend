@@ -17,7 +17,6 @@ class Loan(Base):
     user = relationship("User", back_populates="loans")
     loan_details = relationship("LoanDetail", back_populates="loan", cascade="all, delete-orphan")
     return_ = relationship("Return", back_populates="loan", uselist=False)
-    printing_3d = relationship("Printing3D", back_populates="loan", uselist=False)
 
     __table_args__ = (
         Index("ix_loans_usuario", "id_usuario"),

@@ -304,3 +304,14 @@ Filtros: `?codigo_impresora=IMP-01&id_material=1`
 [deploy]
 startCommand = "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 ```
+
+  Campo   │         Valor         │
+  ├──────────┼───────────────────────┤
+  │ Email    │ sergio@keytest.edu.sv │
+  ├──────────┼───────────────────────┤
+  │ Password │ 123456                │
+  ├──────────┼───────────────────────┤
+  │ Carnet   │ 202020                │
+  ├──────────┼───────────────────────┤
+  │ Role     │ admin                 │
+  └──────────┴────────

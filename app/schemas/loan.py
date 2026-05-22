@@ -6,6 +6,7 @@ from datetime import datetime
 class LoanCreate(BaseModel):
     id_usuario: int
     responsabilidad: bool
+    fecha_limite: Optional[datetime] = None
 
 
 class LoanUpdate(BaseModel):

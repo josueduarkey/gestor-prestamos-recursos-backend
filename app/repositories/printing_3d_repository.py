@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.models.printing_3d import Printing3D
-from app.models.loan import Loan
 
 
 class Printing3DRepository:
@@ -11,32 +10,25 @@ class Printing3DRepository:
     def get_by_id(self, id_impresion: int) -> Optional[Printing3D]:
         return self.db.query(Printing3D).filter(Printing3D.id_impresion == id_impresion).first()
 
-    def get_by_loan(self, id_loan: int) -> Optional[Printing3D]:
-        return self.db.query(Printing3D).filter(Printing3D.id_loan == id_loan).first()
-
     def get_all(
         self,
         skip: int = 0,
         limit: int = 100,
+        id_usuario: Optional[int] = None,
         id_material: Optional[int] = None,
-        codigo_impresora: Optional[str] = None,
+        id_printer: Optional[int] = None,
+        estado: Optional[str] = None,
     ) -> List[Printing3D]:
         query = self.db.query(Printing3D)
+        if id_usuario is not None:
+            query = query.filter(Printing3D.id_usuario == id_usuario)
         if id_material is not None:
             query = query.filter(Printing3D.id_material == id_material)
-        if codigo_impresora:
-            query = query.filter(Printing3D.codigo_impresora == codigo_impresora)
+        if id_printer is not None:
+            query = query.filter(Printing3D.id_printer == id_printer)
+        if estado:
+            query = query.filter(Printing3D.estado == estado)
         return query.offset(skip).limit(limit).all()
-
-    def get_by_usuario(self, id_usuario: int, skip: int = 0, limit: int = 100) -> List[Printing3D]:
-        return (
-            self.db.query(Printing3D)
-            .join(Loan, Printing3D.id_loan == Loan.id_loan)
-            .filter(Loan.id_usuario == id_usuario)
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
 
     def create(self, printing: Printing3D) -> Printing3D:
         self.db.add(printing)

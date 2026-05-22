@@ -22,6 +22,7 @@ import app.models.loan_detail   # noqa: F401
 import app.models.return_       # noqa: F401
 import app.models.material_3d   # noqa: F401
 import app.models.printing_3d   # noqa: F401
+import app.models.printer        # noqa: F401
 
 target_metadata = Base.metadata
 

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from pydantic import BaseModel
+from datetime import datetime
+from pydantic import BaseModel, field_validator
 from app.core.dependencies import get_db, get_current_user, require_roles
 from app.schemas.loan import LoanResponse, LoanDetailedResponse, LoanCreate
 from app.services.loan_service import LoanService
@@ -13,6 +14,19 @@ class LoanCreateRequest(BaseModel):
     id_usuario: int
     responsabilidad: bool
     resource_ids: List[int]
+    fecha_limite: Optional[datetime] = None
+
+    @field_validator("fecha_limite")
+    @classmethod
+    def must_be_future(cls, v: Optional[datetime]) -> Optional[datetime]:
+        if v is None:
+            return v
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
+        naive_v = v.replace(tzinfo=timezone.utc) if v.tzinfo is None else v
+        if naive_v <= now:
+            raise ValueError("fecha_limite must be a future datetime")
+        return v
 
 
 @router.post("/", response_model=LoanResponse, status_code=201)
@@ -31,11 +45,16 @@ async def create_loan(
             id_usuario=current_user.carnet,
             responsabilidad=data.responsabilidad,
             resource_ids=data.resource_ids,
+            fecha_limite=data.fecha_limite,
         )
     elif current_user.role not in ("admin", "gestor"):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Not enough permissions")
 
-    loan_data = LoanCreate(id_usuario=data.id_usuario, responsabilidad=data.responsabilidad)
+    loan_data = LoanCreate(
+        id_usuario=data.id_usuario,
+        responsabilidad=data.responsabilidad,
+        fecha_limite=data.fecha_limite,
+    )
     loan = LoanService(db).create_loan(loan_data, data.resource_ids)
 
     # Send confirmation email in background

@@ -10,3 +10,4 @@ class Laboratory(Base):
     nombre = Column(Text, nullable=False, unique=True)
 
     resources = relationship("Resource", back_populates="laboratory")
+    printers = relationship("Printer", back_populates="laboratory")

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     MAILTRAP_PASSWORD: str = ""
     MAIL_FROM: str = "no-reply@keytest.edu.sv"
     MAIL_FROM_NAME: str = "Key Institute"
+    ALLOWED_ORIGINS: str = "http://localhost:3000"
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod

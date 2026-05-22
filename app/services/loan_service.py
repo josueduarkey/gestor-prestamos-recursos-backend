@@ -63,12 +63,14 @@ class LoanService:
                 )
             resources.append(resource)
 
+        fecha_limite = _as_utc(data.fecha_limite) if data.fecha_limite else now + timedelta(days=1)
+
         loan = Loan(
             id_usuario=data.id_usuario,
             codigo_devolucion=str(uuid.uuid4())[:8].upper(),
             responsabilidad=data.responsabilidad,
             fecha_prestamo=now,
-            fecha_limite=now + timedelta(days=1),
+            fecha_limite=fecha_limite,
         )
         loan = self.repo.create(loan)
 

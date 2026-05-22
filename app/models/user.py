@@ -16,3 +16,4 @@ class User(Base):
     role = Column(Text, nullable=False)
 
     loans = relationship("Loan", back_populates="user")
+    printings = relationship("Printing3D", back_populates="user")

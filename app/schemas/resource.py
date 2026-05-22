@@ -11,6 +11,7 @@ class ResourceCreate(BaseModel):
     cantidad_total: int
     cantidad_disponible: int
     estado: str = "disponible"
+    imagen: Optional[str] = None
     id_laboratorio: int
 
 
@@ -21,6 +22,7 @@ class ResourceUpdate(BaseModel):
     cantidad_total: Optional[int] = None
     cantidad_disponible: Optional[int] = None
     estado: Optional[str] = None
+    imagen: Optional[str] = None
     id_laboratorio: Optional[int] = None
 
 
@@ -32,6 +34,7 @@ class ResourceResponse(BaseModel):
     cantidad_total: Optional[int] = None
     cantidad_disponible: Optional[int] = None
     estado: Optional[str] = None
+    imagen: Optional[str] = None
     id_laboratorio: Optional[int] = None
 
     model_config = {"from_attributes": True}

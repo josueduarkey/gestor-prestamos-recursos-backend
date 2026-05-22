@@ -13,6 +13,7 @@ class Resource(Base):
     cantidad_total = Column(Integer, default=0)
     cantidad_disponible = Column(Integer, default=0)
     estado = Column(Text, default="disponible")
+    imagen = Column(Text)
     id_laboratorio = Column(BigInteger, ForeignKey("laboratories.id_laboratorio"))
 
     laboratory = relationship("Laboratory", back_populates="resources")
