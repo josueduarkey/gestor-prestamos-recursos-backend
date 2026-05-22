@@ -29,27 +29,28 @@ cd gestor-prestamos-recursos-backend
 
 ### 2. Crea el archivo `.env`
 
+En la terminal (bash/zsh):
 ```bash
 cp .env.example .env
+```
+En Windows (PowerShell):
+```powershell
+copy .env.example .env
 ```
 
 Edita `.env` y cambia al menos `SECRET_KEY`:
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/prestamos_db
-POSTGRES_DB=prestamos_db
+DATABASE_URL=postgresql://user:password@localhost:5432/prestamos_keylab
+POSTGRES_DB=prestamos_keylab
 POSTGRES_USER=user
 POSTGRES_PASSWORD=password
-POSTGRES_PORT=5432
-PGADMIN_DEFAULT_EMAIL=admin@local.dev
-PGADMIN_DEFAULT_PASSWORD=admin
-PGADMIN_PORT=5050
 SECRET_KEY=cambia-esto-por-una-clave-secreta-larga
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=60
 ```
 
 ### 3. Levanta todo
+
+Asegúrate de tener **Docker Desktop** iniciado.
 
 ```bash
 docker compose up --build
@@ -106,9 +107,15 @@ docker compose up postgres pgadmin -d
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate          # Mac/Linux
-# .venv\Scripts\activate           # Windows
+```
 
+Activa el entorno:
+- **Mac/Linux:** `source .venv/bin/activate`
+- **Windows (CMD):** `.venv\Scripts\activate`
+- **Windows (PowerShell):** `.\venv\Scripts\Activate.ps1`
+
+Luego instala las librerías:
+```bash
 pip install -r requirements.txt
 ```
 
