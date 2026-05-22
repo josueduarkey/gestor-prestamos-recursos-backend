@@ -1,3 +1,4 @@
+import base64
 import logging
 from pathlib import Path
 from typing import Optional
@@ -6,16 +7,30 @@ from app.config.settings import settings
 
 logger = logging.getLogger(__name__)
 
-_mail_config: Optional[ConnectionConfig] = None
 _fast_mail: Optional[FastMail] = None
+_logo_b64: Optional[str] = None
+
+LOGO_PATH = Path(__file__).parent.parent.parent / "logo-key.png"
+
+
+def _get_logo_b64() -> str:
+    global _logo_b64
+    if _logo_b64 is None:
+        if LOGO_PATH.exists():
+            data = LOGO_PATH.read_bytes()
+            _logo_b64 = f"data:image/png;base64,{base64.b64encode(data).decode()}"
+        else:
+            _logo_b64 = ""
+    return _logo_b64
 
 
 def _get_fast_mail() -> Optional[FastMail]:
-    global _mail_config, _fast_mail
+    global _fast_mail
     if not settings.MAILTRAP_USER or not settings.MAILTRAP_PASSWORD:
+        logger.warning("Email not configured — MAILTRAP_USER or MAILTRAP_PASSWORD missing")
         return None
     if _fast_mail is None:
-        _mail_config = ConnectionConfig(
+        config = ConnectionConfig(
             MAIL_USERNAME=settings.MAILTRAP_USER,
             MAIL_PASSWORD=settings.MAILTRAP_PASSWORD,
             MAIL_FROM=settings.MAIL_FROM,
@@ -25,25 +40,24 @@ def _get_fast_mail() -> Optional[FastMail]:
             MAIL_STARTTLS=True,
             MAIL_SSL_TLS=False,
             USE_CREDENTIALS=True,
+            VALIDATE_CERTS=False,
             TEMPLATE_FOLDER=Path(__file__).parent.parent / "templates" / "emails",
         )
-        _fast_mail = FastMail(_mail_config)
+        _fast_mail = FastMail(config)
     return _fast_mail
 
 
 async def _send(subject: str, recipient: str, template: str, context: dict) -> None:
     fm = _get_fast_mail()
     if not fm:
-        logger.warning("Email not configured — skipping %s to %s", template, recipient)
         return
     try:
-        logo_path = Path(__file__).parent.parent.parent / "logo-key.png"
+        context["logo"] = _get_logo_b64()
         message = MessageSchema(
             subject=subject,
             recipients=[recipient],
             template_body=context,
             subtype=MessageType.html,
-            attachments=[logo_path] if logo_path.exists() else [],
         )
         await fm.send_message(message, template_name=template)
         logger.info("Email sent: %s → %s", template, recipient)
