@@ -9,3 +9,6 @@ python-jose[cryptography]
 passlib[bcrypt]
 alembic
 httpx
+fastapi-mail
+aiofiles
+jinja2

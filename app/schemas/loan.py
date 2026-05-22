@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -23,3 +23,23 @@ class LoanResponse(BaseModel):
     fecha_limite: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
+
+
+class LoanResourceItem(BaseModel):
+    id_recurso: int
+    nombre: str
+    codigo: Optional[str] = None
+    cantidad: int
+
+
+class ReturnSummary(BaseModel):
+    id_devolucion: int
+    fecha_devolucion: Optional[datetime] = None
+    hay_danios: bool
+    descripcion: Optional[str] = None
+
+
+class LoanDetailedResponse(LoanResponse):
+    is_overdue: bool = False
+    resources: List[LoanResourceItem] = []
+    return_info: Optional[ReturnSummary] = None

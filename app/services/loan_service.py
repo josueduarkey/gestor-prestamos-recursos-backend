@@ -15,7 +15,6 @@ MAX_PENALTIES = 3
 
 
 def _as_utc(dt: datetime) -> datetime:
-    """Ensure a datetime is timezone-aware (UTC)."""
     if dt is None:
         return None
     return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
@@ -37,14 +36,12 @@ class LoanService:
         if not user:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
 
-        # Block if user exceeded penalty limit
         if (user.penalizaciones or 0) >= MAX_PENALTIES:
             raise HTTPException(
                 status.HTTP_403_FORBIDDEN,
                 f"User has {user.penalizaciones} penalties and cannot borrow. Limit is {MAX_PENALTIES}.",
             )
 
-        # Block if user has an overdue active loan
         now = datetime.now(timezone.utc)
         active_loans = self.repo.get_all(id_usuario=data.id_usuario, estado="activo")
         for existing in active_loans:
@@ -54,7 +51,6 @@ class LoanService:
                     "User has an overdue loan. Return it before borrowing again.",
                 )
 
-        # Validate all resources have stock
         resources = []
         for rid in resource_ids:
             resource = self.resource_repo.get_by_id(rid)
@@ -67,7 +63,6 @@ class LoanService:
                 )
             resources.append(resource)
 
-        # Create loan
         loan = Loan(
             id_usuario=data.id_usuario,
             codigo_devolucion=str(uuid.uuid4())[:8].upper(),
@@ -77,7 +72,6 @@ class LoanService:
         )
         loan = self.repo.create(loan)
 
-        # Create loan detail per resource and decrement stock
         for resource in resources:
             self.detail_repo.create(
                 LoanDetail(id_loan=loan.id_loan, id_recurso=resource.id_recurso, cantidad=1)
@@ -94,6 +88,48 @@ class LoanService:
         if not loan:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Loan not found")
         return loan
+
+    def get_loan_with_details(self, id_loan: int) -> dict:
+        loan = self.get_loan(id_loan)
+        now = datetime.now(timezone.utc)
+        is_overdue = (
+            loan.estado == "activo"
+            and loan.fecha_limite is not None
+            and _as_utc(loan.fecha_limite) < now
+        )
+
+        resources = []
+        for detail in loan.loan_details:
+            if detail.resource:
+                resources.append({
+                    "id_recurso": detail.resource.id_recurso,
+                    "nombre": detail.resource.nombre,
+                    "codigo": detail.resource.codigo,
+                    "cantidad": detail.cantidad,
+                })
+
+        return_info = None
+        if loan.return_:
+            r = loan.return_
+            return_info = {
+                "id_devolucion": r.id_devolucion,
+                "fecha_devolucion": r.fecha_devolucion,
+                "hay_danios": r.hay_danios,
+                "descripcion": r.descripcion,
+            }
+
+        return {
+            "id_loan": loan.id_loan,
+            "id_usuario": loan.id_usuario,
+            "codigo_devolucion": loan.codigo_devolucion,
+            "responsabilidad": loan.responsabilidad,
+            "estado": loan.estado,
+            "fecha_prestamo": loan.fecha_prestamo,
+            "fecha_limite": loan.fecha_limite,
+            "is_overdue": is_overdue,
+            "resources": resources,
+            "return_info": return_info,
+        }
 
     def get_loans(
         self,

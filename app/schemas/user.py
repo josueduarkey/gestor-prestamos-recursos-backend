@@ -19,6 +19,11 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
 
 
+class ApplyPenaltyRequest(BaseModel):
+    cantidad: int = 1
+    motivo: Optional[str] = None
+
+
 class UserResponse(BaseModel):
     carnet: int
     nombre: str

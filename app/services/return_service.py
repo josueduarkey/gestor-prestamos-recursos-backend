@@ -7,6 +7,7 @@ from app.repositories.resource_repository import ResourceRepository
 from app.repositories.user_repository import UserRepository
 from app.models.return_ import Return
 from app.schemas.return_ import ReturnCreate
+from typing import Optional, List
 
 
 def _as_utc(dt: datetime) -> datetime:
@@ -43,11 +44,9 @@ class ReturnService:
         )
         return_ = self.repo.create(return_)
 
-        # Close loan
         loan.estado = "finalizado"
         self.loan_repo.save(loan)
 
-        # Restore stock for every resource in the loan
         for detail in loan.loan_details:
             resource = self.resource_repo.get_by_id(detail.id_recurso)
             if resource:
@@ -56,14 +55,14 @@ class ReturnService:
                     resource.estado = "disponible"
                 self.resource_repo.save(resource)
 
-        # Apply penalties
         user = self.user_repo.get_by_carnet(loan.id_usuario)
         if user:
             if is_late:
                 user.penalizaciones = (user.penalizaciones or 0) + 1
             if data.hay_danios:
                 user.penalizaciones = (user.penalizaciones or 0) + 1
-            self.user_repo.save(user)
+            if is_late or data.hay_danios:
+                self.user_repo.save(user)
 
         return return_
 
@@ -73,5 +72,12 @@ class ReturnService:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Return not found")
         return return_
 
-    def get_returns(self, skip: int = 0, limit: int = 100):
+    def get_returns(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        id_usuario: Optional[int] = None,
+    ) -> List[Return]:
+        if id_usuario is not None:
+            return self.repo.get_by_usuario(id_usuario, skip=skip, limit=limit)
         return self.repo.get_all(skip=skip, limit=limit)

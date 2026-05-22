@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.models.printing_3d import Printing3D
+from app.models.loan import Loan
 
 
 class Printing3DRepository:
@@ -26,6 +27,16 @@ class Printing3DRepository:
         if codigo_impresora:
             query = query.filter(Printing3D.codigo_impresora == codigo_impresora)
         return query.offset(skip).limit(limit).all()
+
+    def get_by_usuario(self, id_usuario: int, skip: int = 0, limit: int = 100) -> List[Printing3D]:
+        return (
+            self.db.query(Printing3D)
+            .join(Loan, Printing3D.id_loan == Loan.id_loan)
+            .filter(Loan.id_usuario == id_usuario)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def create(self, printing: Printing3D) -> Printing3D:
         self.db.add(printing)

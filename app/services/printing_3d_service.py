@@ -37,7 +37,10 @@ class Printing3DService:
         limit: int = 100,
         id_material: Optional[int] = None,
         codigo_impresora: Optional[str] = None,
+        id_usuario: Optional[int] = None,
     ):
+        if id_usuario is not None:
+            return self.repo.get_by_usuario(id_usuario, skip=skip, limit=limit)
         return self.repo.get_all(
             skip=skip, limit=limit, id_material=id_material, codigo_impresora=codigo_impresora
         )

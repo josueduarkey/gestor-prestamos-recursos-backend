@@ -13,8 +13,19 @@ class UserRepository:
     def get_by_email(self, correo: str) -> Optional[User]:
         return self.db.query(User).filter(User.correo == correo).first()
 
-    def get_all(self, skip: int = 0, limit: int = 100) -> List[User]:
-        return self.db.query(User).offset(skip).limit(limit).all()
+    def get_all(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        role: Optional[str] = None,
+        has_penalties: bool = False,
+    ) -> List[User]:
+        query = self.db.query(User)
+        if role:
+            query = query.filter(User.role == role)
+        if has_penalties:
+            query = query.filter(User.penalizaciones > 0)
+        return query.offset(skip).limit(limit).all()
 
     def create(self, user: User) -> User:
         self.db.add(user)
